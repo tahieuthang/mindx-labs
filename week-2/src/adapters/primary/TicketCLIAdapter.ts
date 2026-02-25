@@ -109,6 +109,10 @@ async function handleCreateTicket(ticketService: TicketServicePort, data: Create
     const createdTicket = await ticketService.createTicket(data)
     console.log(`✅ Tạo ticket "${createdTicket.title}" thành công!`);
   } catch(error: any) {
-    console.error(`--❌ ${error.message}--`);
+    const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi hệ thống";
+    
+    console.error(`\n--- ❌ THẤT BẠI ---`);
+    console.error(`Lý do: ${errorMessage}`);
+    console.error(`------------------\n`);
   }
 }

@@ -23,8 +23,7 @@ export class JsonFileTicketAdapter implements TicketRepositoryPort {
       await fs.writeFile(this.filePath, JSON.stringify(tickets, null, 2), 'utf-8')
       return ticket
     } catch(error) {
-      console.error("Lỗi khi lưu ticket vào file JSON:", error);
-      throw new Error("Không thể ticket vào local storage.");
+      throw new Error(`Persistence Error ${error instanceof Error ? error.message : 'Unknown'}`)
     }
   }
 
