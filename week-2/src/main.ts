@@ -1,9 +1,9 @@
-import { InMemoryTicketAdapter } from "./adapters/secondary/InMemoryTicketAdapter";
+import { JsonFileTicketAdapter } from "./adapters/secondary/JsonFileTicketAdapter";
 import { TicketService } from "./core/services/TicketService";
 import { run as runTicketCLI } from "./adapters/primary/TicketCLIAdapter";
 
 async function main() {
-  const ticketRepository = new InMemoryTicketAdapter();
+  const ticketRepository = new JsonFileTicketAdapter();
   const ticketService = new TicketService(ticketRepository);
 
   await runTicketCLI(ticketService);
