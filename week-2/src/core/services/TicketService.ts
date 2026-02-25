@@ -6,7 +6,7 @@ import { TicketNotFoundError } from "../errors/TicketNotFoundError"
 export class TicketService implements TicketServicePort {
   constructor(private readonly ticketRepository: TicketRepositoryPort) {}
 
-  async createTicket(data: CreateTicketInput): Promise<void> {
+  async createTicket(data: CreateTicketInput): Promise<Ticket> {
     const {
       title,
       description,
@@ -24,7 +24,8 @@ export class TicketService implements TicketServicePort {
       undefined,
       tags
     );
-    await this.ticketRepository.create(ticket)
+    const createdTicket = await this.ticketRepository.create(ticket)
+    return createdTicket
   }
 
   async getTicket(id: string): Promise<Ticket | null> {
