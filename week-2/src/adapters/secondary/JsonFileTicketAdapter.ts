@@ -29,7 +29,11 @@ export class JsonFileTicketAdapter implements TicketRepositoryPort {
   }
 
   async findById(id: string): Promise<Ticket | null> {
-    throw new Error("Method findById chưa được triển khai.");
+    const rawData = await fs.readFile(this.filePath, 'utf-8')
+    let tickets = JSON.parse(rawData || '[]')
+    const searchTicket = tickets.find((t: Ticket) => t.id === id)
+    if(!searchTicket) return null
+    return searchTicket
   }
 
   async findAll(filters?: TicketFilters): Promise<Ticket[] | []> {

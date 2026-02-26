@@ -6,6 +6,7 @@ import type { TicketRepositoryPort } from "../../src/core/ports/TicketRepository
 import type { CreateTicketInput } from "../../src/core/ports/TicketServicePort";
 import { Ticket } from "../../src/core/entites/Ticket";
 import { InvalidDataError } from "../../src/core/errors/InvalidDataError";
+import { TicketNotFoundError } from "../../src/core/errors/TicketNotFoundError";
 import type { TicketFilters } from "../../src/core/ports/TicketServicePort";
 
 describe("TicketService Unit Tests", () => {
@@ -43,7 +44,7 @@ describe("TicketService Unit Tests", () => {
       assert.equal(createCalls[0].arguments[0].title, input.title.trim())
     });
 
-    it("nên ném lỗi InvalidDataError và không gọi repository khi tiêu đề rỗng", async () => {
+    it("nên ném lỗi InvalidDataError và không gọi repository khi title rỗng", async () => {
       const invalidInput: CreateTicketInput = {
         title: "   ",
         description: "Mô tả",
@@ -63,7 +64,7 @@ describe("TicketService Unit Tests", () => {
   });
 
   describe("listTickets", () => {
-    it("nên trả về danh sách ticket từ repository hoặc mảng rỗng", async () => {
+    it("nên trả về danh sách ticket hoặc mảng rỗng", async () => {
       const mockData = [
         new Ticket("T1", "D1", "open", "low", new Date()),
         new Ticket("T2", "D2", "done", "high", new Date())
@@ -94,6 +95,29 @@ describe("TicketService Unit Tests", () => {
 
       const calls = (repositoryMock.findAll as any).mock.calls
       assert.deepEqual(calls[0].arguments[0], filters)
+    });
+  });
+  describe("showTickets", () => {
+    it("nên trả về ticket hoặc ném lỗi TicketNotFoundError", async () => {
+      const targetId = 'el46fpudo'
+      const expectedTicket = new Ticket("T1", "D1", "open", "low", new Date(), undefined, ['bug'], 'el46fpudo');
+
+      (repositoryMock.findById as any).mock.mockImplementation(async (id: string) => {
+        return id === targetId ? expectedTicket : null
+      });
+
+      const result = await service.getTicket(targetId)
+      assert.strictEqual(result?.id, targetId)
+      assert.deepEqual(result, expectedTicket)
+
+      await assert.rejects(
+        () => service.getTicket('wrong-id'),
+        (err: any) => {
+          assert.strictEqual(err.name, 'TicketNotFoundError');
+          assert.match(err.message, /không tồn tại/);
+          return true
+        }
+      )
     });
   });
 });

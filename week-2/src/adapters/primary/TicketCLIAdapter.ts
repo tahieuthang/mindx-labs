@@ -90,8 +90,9 @@ export async function handleListTickets(ticketService: TicketServicePort, rl: Re
       )
       tickets = await ticketService.listTickets({ tags })
     } else if (mode === '5') {
-      console.log('Chưa làm ahihi');
-      
+      const ticketId = await rl.question("Nhập ID Ticket: ")
+      const searchTicket = await ticketService.getTicket(ticketId)
+      if(searchTicket) tickets.push(searchTicket)
     } else {
       tickets = await ticketService.listTickets()
     }
