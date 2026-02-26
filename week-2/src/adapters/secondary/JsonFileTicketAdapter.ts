@@ -1,5 +1,6 @@
 import type { TicketRepositoryPort } from "../../core/ports/TicketRepositoryPort"
 import { Ticket } from "../../core/entites/Ticket"
+import { TicketFilters } from "../../core/ports/TicketServicePort";
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 
@@ -31,9 +32,23 @@ export class JsonFileTicketAdapter implements TicketRepositoryPort {
     throw new Error("Method findById chưa được triển khai.");
   }
 
-  async findAll(): Promise<Ticket[]> {
-    console.warn("Lưu ý: findAll đang trả về mảng rỗng tạm thời.");
-    return [];
+  async findAll(filters?: TicketFilters): Promise<Ticket[] | []> {
+    try {
+      const rawData = await fs.readFile(this.filePath, 'utf-8');
+      let tickets: Ticket[] = JSON.parse(rawData || '[]')
+      if(filters?.status) {
+        tickets = tickets.filter(t => t.status === filters.status)
+      }
+      if(filters?.priority) {
+        tickets = tickets.filter(t => t.priority === filters.priority)
+      }
+      if(filters?.tags && filters?.tags?.length > 0) {
+        tickets = tickets.filter(t => t.tags?.some((tag: string) => filters?.tags?.includes(tag)))
+      }
+      return tickets || []
+    } catch (error) {
+      throw new Error(`Display Error ${error instanceof Error ? error.message : 'Unknown'}`)
+    }
   }
 
   async update(ticket: Ticket): Promise<void> {

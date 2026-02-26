@@ -1,47 +1,7 @@
-import * as readline from 'node:readline/promises';
-import { stdin as input, stdout as output } from 'node:process';
+import type * as Readline from "node:readline/promises";
 import type { TicketServicePort, CreateTicketInput } from "../../core/ports/TicketServicePort"
 import type { TicketStatus, TicketPriority, TicketTag } from "../../core/entites/Ticket";
-
-export async function run(ticketService: TicketServicePort) {
-  const rl = readline.createInterface({ input, output })
-
-  console.log("-- CHƯƠNG TRÌNH QUẢN LÝ TICKET --")
-
-  const title = await rl.question("Nhập tiêu đề ticket: ")
-
-  const description = await rl.question("Nhập mô tả ticket: ")
-
-  const status = await askWithRetry<TicketStatus>(
-    rl,
-    "Lựa chọn status (1-3): ",
-    { "1": "open", "2": "in-progress", "3": "done" },
-    "\nTrạng thái ticket:\n1. Open\n2. In progress\n3. Done"
-  );
-
-  const priority = await askWithRetry<TicketPriority>(
-    rl,
-    "Lựa chọn priority (1-3): ",
-    { "1": "low", "2": "medium", "3": "high" },
-    "\nĐộ ưu tiên:\n1. Low\n2. Medium\n3. High"
-  );
-
-  const tags = await askTagsWithRetry(
-    rl,
-    "Nhập danh sách tag (ví dụ: 1,2,4) hoặc bấm Enter để bỏ qua: ",
-    { "1": "bug", "2": "feature", "3": "task", "4": "fix" },
-    "\nTag ticket:\n1. Bug\n2. Feature\n3. Task\n4. Fix"
-  );
-
-  const data: CreateTicketInput = {
-    title,
-    description,
-    status,
-    priority,
-    tags
-  }
-  await handleCreateTicket(ticketService, data)
-}
+import { Ticket } from "../../core/entites/Ticket"
 
 async function askWithRetry<T>(
   rl: any, 
@@ -104,15 +64,88 @@ async function askTagsWithRetry(
   }
 }
 
-async function handleCreateTicket(ticketService: TicketServicePort, data: CreateTicketInput) {
+export async function handleListTickets(ticketService: TicketServicePort, rl: Readline.Interface) {
   try {
+    console.log("\n--- 📝 CHẾ ĐỘ XEM ---")
+    console.log("1. Xem tất cả")
+    console.log("2. Lọc theo Status")
+    console.log("3. Lọc theo Priority")
+    console.log("4. Lọc theo Tag")
+    console.log("5. Xem chi tiết ticket")
+
+    const mode = await rl.question("Chọn chế độ xem: ")
+    let tickets: Ticket[] = []
+    if (mode === '2') {
+      const status = await rl.question("Nhập status (open/in-progress/done): ");
+      tickets = await ticketService.listTickets({ status });
+    } else if (mode === '3') {
+      const priority = await rl.question("Nhập priority (low/medium/high): ");
+      tickets = await ticketService.listTickets({ priority });
+    } else if (mode === '4') {
+      const tags = await askTagsWithRetry(
+        rl,
+        "Nhập danh sách tag (ví dụ: 1,2,4) hoặc bấm Enter để bỏ qua: ",
+        { "1": "bug", "2": "feature", "3": "task", "4": "fix" },
+        "\nTag ticket:\n1. Bug\n2. Feature\n3. Task\n4. Fix"
+      )
+      tickets = await ticketService.listTickets({ tags })
+    } else if (mode === '5') {
+      console.log('Chưa làm ahihi');
+      
+    } else {
+      tickets = await ticketService.listTickets()
+    }
+    console.table(tickets);
+  } catch(error: any) {
+    const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi hệ thống"
+    console.error(`\n--- ❌ THẤT BẠI ---`)
+    console.error(`Lý do: ${errorMessage}`)
+    console.error(`------------------\n`)
+  }
+}
+
+export async function handleCreateTicket(ticketService: TicketServicePort, rl: Readline.Interface) {
+  try {
+    console.log("-- CHƯƠNG TRÌNH QUẢN LÝ TICKET --")
+
+    const title = await rl.question("Nhập tiêu đề ticket: ")
+
+    const description = await rl.question("Nhập mô tả ticket: ")
+
+    const status = await askWithRetry<TicketStatus>(
+      rl,
+      "Lựa chọn status (1-3): ",
+      { "1": "open", "2": "in-progress", "3": "done" },
+      "\nTrạng thái ticket:\n1. Open\n2. In progress\n3. Done"
+    );
+
+    const priority = await askWithRetry<TicketPriority>(
+      rl,
+      "Lựa chọn priority (1-3): ",
+      { "1": "low", "2": "medium", "3": "high" },
+      "\nĐộ ưu tiên:\n1. Low\n2. Medium\n3. High"
+    );
+
+    const tags = await askTagsWithRetry(
+      rl,
+      "Nhập danh sách tag (ví dụ: 1,2,4) hoặc bấm Enter để bỏ qua: ",
+      { "1": "bug", "2": "feature", "3": "task", "4": "fix" },
+      "\nTag ticket:\n1. Bug\n2. Feature\n3. Task\n4. Fix"
+    );
+
+    const data: CreateTicketInput = {
+      title,
+      description,
+      status,
+      priority,
+      tags
+    }
     const createdTicket = await ticketService.createTicket(data)
     console.log(`✅ Tạo ticket "${createdTicket.title}" thành công!`);
   } catch(error: any) {
-    const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi hệ thống";
-    
-    console.error(`\n--- ❌ THẤT BẠI ---`);
-    console.error(`Lý do: ${errorMessage}`);
-    console.error(`------------------\n`);
+    const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi hệ thống"
+    console.error(`\n--- ❌ THẤT BẠI ---`)
+    console.error(`Lý do: ${errorMessage}`)
+    console.error(`------------------\n`)
   }
 }

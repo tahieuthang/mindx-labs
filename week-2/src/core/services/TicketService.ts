@@ -2,6 +2,7 @@ import type { TicketRepositoryPort } from "../ports/TicketRepositoryPort"
 import type { CreateTicketInput, UpdateTicketInput, TicketServicePort } from "../ports/TicketServicePort"
 import { Ticket } from "../entites/Ticket"
 import { TicketNotFoundError } from "../errors/TicketNotFoundError"
+import { TicketFilters } from "../../core/ports/TicketServicePort";
 
 export class TicketService implements TicketServicePort {
   constructor(private readonly ticketRepository: TicketRepositoryPort) {}
@@ -36,23 +37,8 @@ export class TicketService implements TicketServicePort {
     return ticket
   }
 
-  async listTickets(filters: any): Promise<Ticket[]> {
-    const tickets = await this.ticketRepository.findAll();
-
-    if (filters?.status) {
-      return tickets.filter((t) => t.status === filters.status)
-    }
-
-    if (filters?.priority) {
-      return tickets.filter((t) => t.priority === filters.priority)
-    }
-
-    if (filters?.tags && filters.tags.length > 0) {
-      return tickets.filter((t) => {
-        t.tags?.some(tag => filters.tags.includes(tag))
-      })
-    }
-
+  async listTickets(filters?: TicketFilters): Promise<Ticket[] | []> {
+    const tickets = await this.ticketRepository.findAll(filters)
     return tickets
   }
 
