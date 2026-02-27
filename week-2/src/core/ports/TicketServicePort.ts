@@ -8,13 +8,13 @@ export type CreateTicketInput = {
   tags?: TicketTag[];
 };
 
-export type UpdateTicketInput = {
-  title?: string
-  description?: string
-  status?: TicketStatus
-  priority?: TicketPriority
-  tags?: TicketTag[]
-}
+// export type UpdateTicketInput = {
+//   title?: string
+//   description?: string
+//   status?: TicketStatus
+//   priority?: TicketPriority
+//   tags?: TicketTag[]
+// }
 
 export type TicketFilters = {
   status?: string;
@@ -26,5 +26,5 @@ export interface TicketServicePort {
   createTicket(data: CreateTicketInput): Promise<Ticket>
   getTicket(id: string): Promise<Ticket | null>
   listTickets(filters?: TicketFilters): Promise<Ticket[] | []>
-  updateTicket(id: string, data: UpdateTicketInput): Promise<Ticket>
+  updateTicket(ticket: Ticket, status: TicketStatus): Promise<Ticket>
 }

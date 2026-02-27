@@ -1,5 +1,5 @@
-import type { UpdateTicketInput } from "../ports/TicketServicePort";
 import { InvalidDataError } from "../errors/InvalidDataError"
+import { TicketNotFoundError } from "../errors/TicketNotFoundError";
 export type TicketStatus = 'open' | 'in-progress' | 'done'
 export type TicketPriority = 'low' | 'medium' | 'high'
 export type TicketTag = 'bug' | 'feature' | 'task' | 'fix';
@@ -48,15 +48,24 @@ export class Ticket {
     }
   }
 
-  public update(data: UpdateTicketInput) {
-    const { title, description, status, priority, tags = [] } = data
-    if(title !== undefined) this.title = title.trim()
-    if(description !== undefined) this.description = description
-    if(status !== undefined) this.status = status
-    if(priority !== undefined) this.priority = priority
-    if(tags !== undefined) this.tags = tags as TicketTag[]
+  static fromRaw(data: any): Ticket {
+    return new Ticket(
+      data.title,
+      data.description,
+      data.status,
+      data.priority,
+      new Date(data.createdAt),
+      data.updatedAt ? new Date(data.updatedAt) : undefined,
+      data.tags,
+      data.id
+    )
+  }
 
+  public update(status: TicketStatus): boolean {
+    if(this.status === status) return false
+    if(status !== undefined) this.status = status
     this.updatedAt = new Date()
     this.validate()
+    return true
   }
 }

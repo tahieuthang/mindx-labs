@@ -2,6 +2,8 @@ import type * as Readline from "node:readline/promises";
 import type { TicketServicePort, CreateTicketInput } from "../../core/ports/TicketServicePort"
 import type { TicketStatus, TicketPriority, TicketTag } from "../../core/entites/Ticket";
 import { Ticket } from "../../core/entites/Ticket"
+import { TicketService } from "../../core/services/TicketService";
+import { log } from "node:console";
 
 async function askWithRetry<T>(
   rl: any, 
@@ -72,9 +74,11 @@ export async function handleListTickets(ticketService: TicketServicePort, rl: Re
     console.log("3. Lọc theo Priority")
     console.log("4. Lọc theo Tag")
     console.log("5. Xem chi tiết ticket")
+    console.log("6. Thoát")
 
     const mode = await rl.question("Chọn chế độ xem: ")
     let tickets: Ticket[] = []
+    let searchTicket: Ticket | null
     if (mode === '2') {
       const status = await rl.question("Nhập status (open/in-progress/done): ");
       tickets = await ticketService.listTickets({ status });
@@ -91,12 +95,21 @@ export async function handleListTickets(ticketService: TicketServicePort, rl: Re
       tickets = await ticketService.listTickets({ tags })
     } else if (mode === '5') {
       const ticketId = await rl.question("Nhập ID Ticket: ")
-      const searchTicket = await ticketService.getTicket(ticketId)
+      searchTicket = await ticketService.getTicket(ticketId)
+
       if(searchTicket) tickets.push(searchTicket)
+      console.table(tickets)
+
+      const confirm = await rl.question("Bạn có muốn cập nhật Ticket? (y/n): ")
+      if(confirm.toLowerCase() == 'y') {
+        if(searchTicket) await handleUpdateTicket(ticketService, searchTicket, rl)
+      }
+    } else if (mode === '6') {
+      return
     } else {
       tickets = await ticketService.listTickets()
     }
-    console.table(tickets);
+    if(mode !== '5') console.table(tickets);
   } catch(error: any) {
     const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi hệ thống"
     console.error(`\n--- ❌ THẤT BẠI ---`)
@@ -143,6 +156,24 @@ export async function handleCreateTicket(ticketService: TicketServicePort, rl: R
     }
     const createdTicket = await ticketService.createTicket(data)
     console.log(`✅ Tạo ticket "${createdTicket.title}" thành công!`);
+  } catch(error: any) {
+    const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi hệ thống"
+    console.error(`\n--- ❌ THẤT BẠI ---`)
+    console.error(`Lý do: ${errorMessage}`)
+    console.error(`------------------\n`)
+  }
+}
+
+async function handleUpdateTicket(ticketService: TicketServicePort, ticket: Ticket, rl: Readline.Interface) {
+  try {
+    const status = await askWithRetry<TicketStatus>(
+      rl,
+      "Cập nhật status (1-3): ",
+      { "1": "open", "2": "in-progress", "3": "done" },
+      "\nTrạng thái ticket:\n1. Open\n2. In progress\n3. Done"
+    );
+    const updatedTicket = await ticketService.updateTicket(ticket, status)
+    console.log(`✅ Update status ticket "${updatedTicket.title}" thành công!`); 
   } catch(error: any) {
     const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi hệ thống"
     console.error(`\n--- ❌ THẤT BẠI ---`)

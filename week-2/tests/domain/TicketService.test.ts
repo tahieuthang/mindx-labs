@@ -24,7 +24,7 @@ describe("TicketService Unit Tests", () => {
   });
 
   describe("createTicket", () => {
-    it("nên tạo ticket thành công khi dữ liệu hợp lệ", async () => {
+    it("Tạo ticket thành công khi dữ liệu hợp lệ", async () => {
       const input: CreateTicketInput = {
         title: "Test ticket",
         description: "Mô tả hợp lệ",
@@ -44,7 +44,7 @@ describe("TicketService Unit Tests", () => {
       assert.equal(createCalls[0].arguments[0].title, input.title.trim())
     });
 
-    it("nên ném lỗi InvalidDataError và không gọi repository khi title rỗng", async () => {
+    it("Ném lỗi InvalidDataError và không gọi repository khi dữ liệu không hợp lệ", async () => {
       const invalidInput: CreateTicketInput = {
         title: "   ",
         description: "Mô tả",
@@ -64,7 +64,7 @@ describe("TicketService Unit Tests", () => {
   });
 
   describe("listTickets", () => {
-    it("nên trả về danh sách ticket hoặc mảng rỗng", async () => {
+    it("Trả về danh sách ticket hoặc mảng rỗng", async () => {
       const mockData = [
         new Ticket("T1", "D1", "open", "low", new Date()),
         new Ticket("T2", "D2", "done", "high", new Date())
@@ -79,7 +79,7 @@ describe("TicketService Unit Tests", () => {
       assert.deepEqual(emptyResult, [])
     });
 
-    it("nên chuyển tiếp bộ lọc xuống repository chính xác", async () => {
+    it("Trả về danh sách ticket với bộ lọc", async () => {
       const filters: TicketFilters = { status: "open", priority: "high" }
       const expectedTickets = [new Ticket("T1", "D1", "open", "high", new Date())];
 
@@ -97,8 +97,9 @@ describe("TicketService Unit Tests", () => {
       assert.deepEqual(calls[0].arguments[0], filters)
     });
   });
+
   describe("showTickets", () => {
-    it("nên trả về ticket hoặc ném lỗi TicketNotFoundError", async () => {
+    it("Trả về ticket hoặc ném lỗi TicketNotFoundError", async () => {
       const targetId = 'el46fpudo'
       const expectedTicket = new Ticket("T1", "D1", "open", "low", new Date(), undefined, ['bug'], 'el46fpudo');
 
@@ -119,5 +120,40 @@ describe("TicketService Unit Tests", () => {
         }
       )
     });
+  });
+
+  describe("updateTickets", () => {
+    it("Update ticket với status hợp lệ", async () => {
+      const createdAt = new Date("2026-02-25T16:10:59.699Z");
+      const ticketMock = new Ticket("edit image feature", "image", "open", "medium", createdAt, new Date(), ['feature'], '8kea7o4jn');
+      
+      (repositoryMock.update as any).mock.mockImplementation(async (t: Ticket) => t)
+      const result = await service.updateTicket(ticketMock, "done")
+      
+      assert.strictEqual(result.status, "done")
+      assert.strictEqual(result.id, ticketMock.id)
+      assert.strictEqual(result.title, ticketMock.title);
+      assert.deepEqual(result.tags, ticketMock.tags);
+      assert.strictEqual(result.createdAt.getTime(), createdAt.getTime());
+
+      const updateCalls = (repositoryMock.update as any).mock.calls;
+      assert.strictEqual(updateCalls.length, 1, "Repository.update phải được gọi đúng 1 lần");
+      
+      const ticketInCall = updateCalls[0].arguments[0];
+      assert.strictEqual(ticketInCall.status, "done", "Ticket gửi xuống Repo phải có status là done");
+      assert.strictEqual(ticketInCall.id, ticketMock.id, "Phải gửi đúng ID ticket xuống Repo");
+    });
+    it("Update ticket với status hợp lệ", async () => {
+      const createdAt = new Date("2026-02-25T16:10:59.699Z");
+      const ticketMock = new Ticket("edit image feature", "image", "open", "medium", createdAt, new Date(), ['feature'], '8kea7o4jn')
+      const statusMock: any = "wrong-status"
+
+      await assert.rejects(
+        () => service.updateTicket(ticketMock, statusMock),
+        InvalidDataError
+      )
+      const createCalls = (repositoryMock.update as any).mock.calls
+      assert.equal(createCalls.length, 0);
+    })
   });
 });

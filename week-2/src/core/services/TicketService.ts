@@ -1,6 +1,6 @@
 import type { TicketRepositoryPort } from "../ports/TicketRepositoryPort"
-import type { CreateTicketInput, UpdateTicketInput, TicketServicePort } from "../ports/TicketServicePort"
-import { Ticket } from "../entites/Ticket"
+import type { CreateTicketInput, TicketServicePort } from "../ports/TicketServicePort"
+import { Ticket, TicketStatus } from "../entites/Ticket"
 import { TicketNotFoundError } from "../errors/TicketNotFoundError"
 import { TicketFilters } from "../../core/ports/TicketServicePort";
 
@@ -42,15 +42,11 @@ export class TicketService implements TicketServicePort {
     return tickets
   }
 
-  async updateTicket(id: string, data: UpdateTicketInput): Promise<Ticket> {
-    const ticket = await this.ticketRepository.findById(id)
-    if (!ticket) {
-      throw new TicketNotFoundError(id)
+  async updateTicket(ticket: Ticket, status: TicketStatus): Promise<Ticket> {
+    const hasChange = ticket.update(status)
+    if(!hasChange) {
+      throw new Error("Đây đã là status hiện tại của ticket!")
     }
-
-    ticket.update(data)
-
-    await this.ticketRepository.update(ticket)
-    return ticket;
+    return await this.ticketRepository.update(ticket, status)
   }
 }

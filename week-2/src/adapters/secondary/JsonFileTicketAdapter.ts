@@ -1,5 +1,5 @@
 import type { TicketRepositoryPort } from "../../core/ports/TicketRepositoryPort"
-import { Ticket } from "../../core/entites/Ticket"
+import { Ticket, TicketStatus } from "../../core/entites/Ticket"
 import { TicketFilters } from "../../core/ports/TicketServicePort";
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
@@ -30,7 +30,8 @@ export class JsonFileTicketAdapter implements TicketRepositoryPort {
 
   async findById(id: string): Promise<Ticket | null> {
     const rawData = await fs.readFile(this.filePath, 'utf-8')
-    let tickets = JSON.parse(rawData || '[]')
+    let plainObjects = JSON.parse(rawData || '[]') as any[]
+    let tickets: Ticket[] = plainObjects.map(item => Ticket.formRaw(item))
     const searchTicket = tickets.find((t: Ticket) => t.id === id)
     if(!searchTicket) return null
     return searchTicket
@@ -38,8 +39,9 @@ export class JsonFileTicketAdapter implements TicketRepositoryPort {
 
   async findAll(filters?: TicketFilters): Promise<Ticket[] | []> {
     try {
-      const rawData = await fs.readFile(this.filePath, 'utf-8');
-      let tickets: Ticket[] = JSON.parse(rawData || '[]')
+      const rawData = await fs.readFile(this.filePath, 'utf-8')
+      let plainObjects = JSON.parse(rawData || '[]') as any[]
+      let tickets: Ticket[] = plainObjects.map(item => Ticket.formRaw(item))
       if(filters?.status) {
         tickets = tickets.filter(t => t.status === filters.status)
       }
@@ -55,8 +57,19 @@ export class JsonFileTicketAdapter implements TicketRepositoryPort {
     }
   }
 
-  async update(ticket: Ticket): Promise<void> {
-    throw new Error("Method update chưa được triển khai.");
+  async update(ticket: Ticket, status: TicketStatus): Promise<Ticket> {
+    const rawData = await fs.readFile(this.filePath, 'utf-8')
+    const allTicket: Ticket[] = JSON.parse(rawData || '[]')
+    const searchTicket = allTicket.find(t => t.id === ticket.id)
+    if(searchTicket) {
+      searchTicket.status = status
+      searchTicket.updatedAt = ticket.updatedAt
+      await fs.writeFile(this.filePath, JSON.stringify(allTicket, null, 2), 'utf-8')
+      return searchTicket
+    } else {
+      throw new Error(`Ticket với ID ${ticket.id} không tồn tại trong hệ thống.`)
+    }
+    
   }
 
 }
