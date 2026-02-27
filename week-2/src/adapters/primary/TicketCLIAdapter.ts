@@ -85,40 +85,25 @@ export async function handleListTickets(ticketService: TicketServicePort, rl: Re
   try {
     console.log("\n--- 📝 CHẾ ĐỘ XEM ---")
     console.log("1. Xem tất cả")
-    console.log("2. Lọc theo Status")
-    console.log("3. Lọc theo Priority")
-    console.log("4. Lọc theo Tag")
-    console.log("5. Xem chi tiết ticket")
-    console.log("6. Thoát")
+    console.log("2. Lọc ticket (theo status, prority, tags)")
+    console.log("3. Xem chi tiết ticket")
+    console.log("4. Thoát")
 
     const mode = await rl.question("Chọn chế độ xem: ")
     let tickets: Ticket[] = []
     let searchTicket: Ticket | null
     if (mode === '2') {
-      const status = await enterWithRetry(
-        rl,
-        "Nhập status (open/in-progress/done): ",
-        ['open', 'in-progress', 'done'],
-      )
-      tickets = await ticketService.listTickets({ status });
-      console.log(tickets);
-      
-    } else if (mode === '3') {
-      const priority = await enterWithRetry(
-        rl,
-        "Nhập status (low/medium/high): ",
-        ['low', 'medium', 'high'],
-      )
-      tickets = await ticketService.listTickets({ priority });
-    } else if (mode === '4') {
+      const status = await rl.question("Nhập status (open/in-progress/done): ")
+      const priority = await rl.question("Nhập priority (low/medium/high): ")
       const tags = await askTagsWithRetry(
         rl,
         "Nhập danh sách tag (ví dụ: 1,2,4) hoặc bấm Enter để bỏ qua: ",
         { "1": "bug", "2": "feature", "3": "task", "4": "fix" },
         "\nTag ticket:\n1. Bug\n2. Feature\n3. Task\n4. Fix"
       )
-      tickets = await ticketService.listTickets({ tags })
-    } else if (mode === '5') {
+      const filters = { status, priority, tags }
+      tickets = await ticketService.listTickets(filters);
+    } else if (mode === '3') {
       const ticketId = await rl.question("Nhập ID Ticket: ")
       searchTicket = await ticketService.getTicket(ticketId)
 
@@ -129,12 +114,20 @@ export async function handleListTickets(ticketService: TicketServicePort, rl: Re
       if(confirm.toLowerCase() == 'y') {
         if(searchTicket) await handleUpdateTicket(ticketService, searchTicket, rl)
       }
-    } else if (mode === '6') {
+    } else if (mode === '4') {
       return
     } else {
       tickets = await ticketService.listTickets()
     }
-    if(mode !== '5') console.table(tickets);
+
+    if(mode !== '5') console.log("\n --- DANH SÁCH TICKET ---");
+
+    if (tickets.length > 0) {
+      console.log("\n --- ✅ DANH SÁCH TICKET ---");
+      console.table(tickets);
+    } else {
+      console.log("\n => Không tìm thấy ticket nào phù hợp với bộ lọc của bạn.");
+    }
   } catch(error: any) {
     const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi hệ thống"
     console.error(`\n--- ❌ THẤT BẠI ---`)
@@ -145,7 +138,7 @@ export async function handleListTickets(ticketService: TicketServicePort, rl: Re
 
 export async function handleCreateTicket(ticketService: TicketServicePort, rl: Readline.Interface) {
   try {
-    console.log("-- CHƯƠNG TRÌNH QUẢN LÝ TICKET --")
+    console.log("--- CHƯƠNG TRÌNH QUẢN LÝ TICKET ---")
 
     const title = await rl.question("Nhập tiêu đề ticket: ")
 

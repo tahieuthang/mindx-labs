@@ -13,7 +13,7 @@ export class TicketService implements TicketServicePort {
       description,
       status = "open",
       priority = "low",
-      tags = [],
+      tags = []
     } = data;
     const createdAt = new Date()
     const ticket = new Ticket(
@@ -39,7 +39,7 @@ export class TicketService implements TicketServicePort {
 
   async listTickets(filters?: TicketFilters): Promise<Ticket[] | []> {
     const tickets = await this.ticketRepository.findAll(filters)
-    return tickets
+    return tickets || []
   }
 
   async updateTicket(ticket: Ticket, status: TicketStatus): Promise<Ticket> {
