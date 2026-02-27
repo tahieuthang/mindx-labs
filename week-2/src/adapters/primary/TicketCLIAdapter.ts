@@ -66,6 +66,21 @@ async function askTagsWithRetry(
   }
 }
 
+async function enterWithRetry<T> (
+  rl: any,
+  question: string,
+  validOptions: string[],
+): Promise<TicketStatus> {
+  while (true) {
+    const choice = await rl.question(question)
+    const clearChoice = choice.trim()
+    if(validOptions.includes(clearChoice)) {
+      return clearChoice
+    }
+    console.log(`❌ Lựa chọn "${choice}" không hợp lệ. Vui lòng nhập lại!`);
+  }
+}
+
 export async function handleListTickets(ticketService: TicketServicePort, rl: Readline.Interface) {
   try {
     console.log("\n--- 📝 CHẾ ĐỘ XEM ---")
@@ -80,10 +95,20 @@ export async function handleListTickets(ticketService: TicketServicePort, rl: Re
     let tickets: Ticket[] = []
     let searchTicket: Ticket | null
     if (mode === '2') {
-      const status = await rl.question("Nhập status (open/in-progress/done): ");
+      const status = await enterWithRetry(
+        rl,
+        "Nhập status (open/in-progress/done): ",
+        ['open', 'in-progress', 'done'],
+      )
       tickets = await ticketService.listTickets({ status });
+      console.log(tickets);
+      
     } else if (mode === '3') {
-      const priority = await rl.question("Nhập priority (low/medium/high): ");
+      const priority = await enterWithRetry(
+        rl,
+        "Nhập status (low/medium/high): ",
+        ['low', 'medium', 'high'],
+      )
       tickets = await ticketService.listTickets({ priority });
     } else if (mode === '4') {
       const tags = await askTagsWithRetry(

@@ -48,7 +48,7 @@ export class Ticket {
     }
   }
 
-  static fromRaw(data: any): Ticket {
+  static formRaw(data: any): Ticket {
     return new Ticket(
       data.title,
       data.description,
