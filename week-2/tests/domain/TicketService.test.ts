@@ -25,6 +25,7 @@ describe("TicketService Unit Tests", () => {
 
   describe("createTicket", () => {
     it("Tạo ticket thành công khi dữ liệu hợp lệ", async () => {
+      // Chuẩn bị dữ liệu input
       const input: CreateTicketInput = {
         title: "Test ticket",
         description: "Mô tả hợp lệ",
@@ -32,15 +33,16 @@ describe("TicketService Unit Tests", () => {
         priority: "low",
         tags: ["bug"],
       };
-      
+
       (repositoryMock.create as any).mock.mockImplementation(async (ticket: Ticket) => ticket)
+
       const result = await service.createTicket(input)
 
       assert.ok(result instanceof Ticket);
       assert.strictEqual(result.title, input.title.trim())
       assert.strictEqual(result.status, input.status)
       assert.ok(result.id, "Phải có ID được sinh ra")
-      
+
       const createCalls = (repositoryMock.create as any).mock.calls 
       assert.equal(createCalls.length, 1);
 

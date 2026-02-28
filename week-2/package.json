@@ -7,7 +7,8 @@
     "build": "tsc",
     "start": "node dist/main.js",
     "dev": "ts-node src/main.ts",
-    "test": "node --test -r ts-node/register tests/domain/TicketService.test.ts"
+    "test:service": "node --test -r ts-node/register tests/domain/TicketService.test.ts",
+    "test:entities": "node --test -r ts-node/register tests/domain/TicketEntities.test.ts"
   },
   "keywords": [],
   "author": "",
