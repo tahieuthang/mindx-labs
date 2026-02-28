@@ -2,7 +2,6 @@ import type * as Readline from "node:readline/promises";
 import type { TicketServicePort, CreateTicketInput } from "../../core/ports/TicketServicePort"
 import type { TicketStatus, TicketPriority, TicketTag } from "../../core/entites/Ticket";
 import { Ticket } from "../../core/entites/Ticket"
-import { TicketService } from "../../core/services/TicketService";
 import { log } from "node:console";
 
   async function askWithRetry<T>(
@@ -70,11 +69,11 @@ async function enterWithRetry<T> (
   rl: any,
   question: string,
   validOptions: string[],
-): Promise<TicketStatus> {
+): Promise<string> {
   while (true) {
     const choice = await rl.question(question)
-    const clearChoice = choice.trim()
-    if(validOptions.includes(clearChoice)) {
+    const clearChoice = choice.trim().toLowerCase()
+    if(validOptions.includes(clearChoice) || clearChoice == '') {
       return clearChoice
     }
     console.log(`❌ Lựa chọn "${choice}" không hợp lệ. Vui lòng nhập lại!`);
@@ -93,8 +92,16 @@ export async function handleListTickets(ticketService: TicketServicePort, rl: Re
     let tickets: Ticket[] = []
     let searchTicket: Ticket | null
     if (mode === '2') {
-      const status = await rl.question("Nhập status (open/in-progress/done): ")
-      const priority = await rl.question("Nhập priority (low/medium/high): ")
+      const status = await enterWithRetry(
+        rl,
+        "Nhập status (open/in-progress/done): ",
+        ["open", "in-progress", "done"]
+      )
+      const priority = await enterWithRetry(
+        rl,
+        "Nhập priority (low/medium/high): ",
+        ["low", "medium", "high"]
+      )
       const tags = await askTagsWithRetry(
         rl,
         "Nhập danh sách tag (ví dụ: 1,2,4) hoặc bấm Enter để bỏ qua: ",
