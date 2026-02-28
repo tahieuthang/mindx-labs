@@ -4,14 +4,15 @@ Công cụ CLI quản lý ticket được xây dựng theo chuẩn **Hexagonal A
 
 ## 📋 Mục lục
 
-- [Kiến trúc](#kiến-trúc)
-- [Cài đặt](#cài-đặt)
-- [Cấu hình](#cấu-hình)
-- [Sử dụng](#sử-dụng)
-- [Testing](#testing)
-- [Cấu trúc dự án](#cấu-trúc-dự-án)
+- [I. Kiến trúc](#kiến-trúc)
+- [II. Cài đặt](#cài-đặt)
+- [III. Cấu hình](#cấu-hình)
+- [IV. Sử dụng](#sử-dụng)
+- [V. Demo sản phẩm](#sử-dụng)
+- [VI. Testing](#testing)
+- [VII. Cấu trúc dự án](#cấu-trúc-dự-án)
 
-## 🏗️ Kiến trúc
+## I. Kiến trúc
 
 Dự án tuân thủ **Hexagonal Architecture** với các lớp:
 
@@ -34,11 +35,11 @@ Dự án tuân thủ **Hexagonal Architecture** với các lớp:
 - `InMemoryTicketAdapter`: Triển khai in-memory cho testing
 
 ### Dependency Rule
-- ✅ Domain **không phụ thuộc** vào Adapters
-- ✅ Domain chỉ phụ thuộc vào **Ports** (interfaces)
-- ✅ Adapters phụ thuộc vào Domain + Ports
+- Domain **không phụ thuộc** vào Adapters
+- Domain chỉ phụ thuộc vào **Ports** (interfaces)
+- Adapters phụ thuộc vào Domain + Ports
 
-## 🚀 Cài đặt
+## II. Cài đặt
 
 ### Yêu cầu
 - Node.js >= 14.x
@@ -61,7 +62,7 @@ Dự án tuân thủ **Hexagonal Architecture** với các lớp:
    npm run build
    ```
 
-## ⚙️ Cấu hình
+## III. Cấu hình
 
 Dự án sử dụng JSON file để lưu trữ dữ liệu. File sẽ được tự động tạo tại:
 ```
@@ -70,7 +71,7 @@ data/tickets.json
 
 Không cần cấu hình thêm. Dự án sử dụng TypeScript với cấu hình trong `tsconfig.json`.
 
-## 📖 Sử dụng
+## IV. Sử dụng
 
 ### Chạy ứng dụng
 
@@ -137,7 +138,7 @@ Nhập danh sách tag (ví dụ: 1,2,4) hoặc bấm Enter để bỏ qua: 1,4
 ✅ Tạo ticket "Fix bug login" thành công!
 ```
 
-## 🎥 Demo sản phẩm
+## V. Demo sản phẩm
 
 📺 Video demo:  
 https://www.youtube.com/watch?v=Q5dS1OPMU9M&feature=youtu.be
@@ -148,7 +149,7 @@ Nội dung video bao gồm:
 - Cập nhật trạng thái
 - Thoát chương trình
 
-## 🧪 Testing
+## VI. Testing
 
 ### Chạy tests
 
@@ -164,9 +165,9 @@ npm run test:service
 
 ### Chiến lược Testing
 
-- ✅ **Domain tests độc lập**: Sử dụng **mocks** cho `TicketRepositoryPort`
-- ✅ **Không phụ thuộc vào file system**: Domain tests không cần file JSON thật
-- ✅ **Test business logic**: Validate rules, error handling, use cases
+- **Domain tests độc lập**: Sử dụng **mocks** cho `TicketRepositoryPort`
+- **Không phụ thuộc vào file system**: Domain tests không cần file JSON thật
+- **Test business logic**: Validate rules, error handling, use cases
 
 ### Ví dụ Test Structure
 
@@ -183,7 +184,7 @@ const repositoryMock: TicketRepositoryPort = {
 const service = new TicketService(repositoryMock);
 ```
 
-## 📁 Cấu trúc dự án
+## VII. Cấu trúc dự án
 
 ```
 week-2/
@@ -216,7 +217,7 @@ week-2/
 └── README.md
 ```
 
-## 🎯 Hexagonal Architecture - Tóm tắt
+## Hexagonal Architecture - Tóm tắt
 
 ### Khái niệm
 Hexagonal Architecture (còn gọi là Ports & Adapters) tách biệt **business logic** (Domain) khỏi **công nghệ bên ngoài** (Adapters) thông qua **Ports** (interfaces).
@@ -242,14 +243,14 @@ JsonFileTicketAdapter (Secondary)
 
 **Quy tắc**: Dependencies chỉ đi vào trong (vào Domain), không đi ra ngoài.
 
-## 📝 Notes
+## Notes
 
 - Domain validation được thực hiện trong `Ticket` entity
 - Filter logic được xử lý trong `JsonFileTicketAdapter` (có thể di chuyển lên Domain nếu cần)
 - CLI sử dụng interactive mode với `readline` interface
 - Tất cả business rules được test trong domain tests với mocks
 
-## 📚 Tài liệu tham khảo
+## Tài liệu tham khảo
 
 - [Prompt Engineering Template](./PromptEngineering.md) - Template hướng dẫn xây dựng dự án
 - Hexagonal Architecture: https://alistair.cockburn.us/hexagonal-architecture/
