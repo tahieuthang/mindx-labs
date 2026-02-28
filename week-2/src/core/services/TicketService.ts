@@ -8,25 +8,10 @@ export class TicketService implements TicketServicePort {
   constructor(private readonly ticketRepository: TicketRepositoryPort) {}
 
   async createTicket(data: CreateTicketInput): Promise<Ticket> {
-    const {
-      title,
-      description,
-      status = "open",
-      priority = "low",
-      tags = []
-    } = data;
+    const { title, description, status = "open", priority = "low", tags = [] } = data
     const createdAt = new Date()
-    const ticket = new Ticket(
-      title,
-      description,
-      status,
-      priority,
-      createdAt,
-      undefined,
-      tags
-    );
-    const createdTicket = await this.ticketRepository.create(ticket)
-    return createdTicket
+    const ticket = new Ticket(title, description, status, priority, createdAt, undefined, tags)
+    return await this.ticketRepository.create(ticket)
   }
 
   async getTicket(id: string): Promise<Ticket | null> {
@@ -47,6 +32,6 @@ export class TicketService implements TicketServicePort {
     if(!hasChange) {
       throw new Error("Đây đã là status hiện tại của ticket!")
     }
-    return await this.ticketRepository.update(ticket, status)
+    return await this.ticketRepository.update(ticket)
   }
 }

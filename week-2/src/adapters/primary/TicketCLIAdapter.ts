@@ -5,22 +5,22 @@ import { Ticket } from "../../core/entites/Ticket"
 import { TicketService } from "../../core/services/TicketService";
 import { log } from "node:console";
 
-async function askWithRetry<T>(
-  rl: any, 
-  question: string, 
-  map: Record<string, T>, 
-  optionsDisplay: string
-): Promise<T> {
-  while (true) {
-    console.log(optionsDisplay);
-    const choice = await rl.question(question);
-    
-    if (map[choice]) {
-      return map[choice];
+  async function askWithRetry<T>(
+    rl: any, 
+    question: string, 
+    map: Record<string, T>, 
+    optionsDisplay: string
+  ): Promise<T> {
+    while (true) {
+      console.log(optionsDisplay);
+      const choice = await rl.question(question);
+      
+      if (map[choice]) {
+        return map[choice];
+      }
+      console.log(`❌ Lựa chọn "${choice}" không hợp lệ. Vui lòng chọn lại!`);
     }
-    console.log(`❌ Lựa chọn "${choice}" không hợp lệ. Vui lòng chọn lại!`);
   }
-}
 
 async function askTagsWithRetry(
   rl: any,
@@ -113,6 +113,7 @@ export async function handleListTickets(ticketService: TicketServicePort, rl: Re
       const confirm = await rl.question("Bạn có muốn cập nhật Ticket? (y/n): ")
       if(confirm.toLowerCase() == 'y') {
         if(searchTicket) await handleUpdateTicket(ticketService, searchTicket, rl)
+          return
       }
     } else if (mode === '4') {
       return
@@ -120,10 +121,8 @@ export async function handleListTickets(ticketService: TicketServicePort, rl: Re
       tickets = await ticketService.listTickets()
     }
 
-    if(mode !== '5') console.log("\n --- DANH SÁCH TICKET ---");
-
     if (tickets.length > 0) {
-      console.log("\n --- ✅ DANH SÁCH TICKET ---");
+      console.log("\n --- DANH SÁCH TICKET ---");
       console.table(tickets);
     } else {
       console.log("\n => Không tìm thấy ticket nào phù hợp với bộ lọc của bạn.");
@@ -191,7 +190,8 @@ async function handleUpdateTicket(ticketService: TicketServicePort, ticket: Tick
       "\nTrạng thái ticket:\n1. Open\n2. In progress\n3. Done"
     );
     const updatedTicket = await ticketService.updateTicket(ticket, status)
-    console.log(`✅ Update status ticket "${updatedTicket.title}" thành công!`); 
+    console.log(`✅ Update status ticket "${updatedTicket.title}" thành công!`);
+    return updatedTicket
   } catch(error: any) {
     const errorMessage = error instanceof Error ? error.message : "Đã xảy ra lỗi hệ thống"
     console.error(`\n--- ❌ THẤT BẠI ---`)

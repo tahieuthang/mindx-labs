@@ -32,23 +32,28 @@ describe("TicketService Unit Tests", () => {
         priority: "low",
         tags: ["bug"],
       };
-
+      
+      (repositoryMock.create as any).mock.mockImplementation(async (ticket: Ticket) => ticket)
       const result = await service.createTicket(input)
 
       assert.ok(result instanceof Ticket);
-      assert.equal(result.title, input.title.trim())
-      assert.equal(result.status, input.status)
+      assert.strictEqual(result.title, input.title.trim())
+      assert.strictEqual(result.status, input.status)
+      assert.ok(result.id, "Phải có ID được sinh ra")
       
-      const createCalls = (repositoryMock.create as any).mock.calls
+      const createCalls = (repositoryMock.create as any).mock.calls 
       assert.equal(createCalls.length, 1);
-      assert.equal(createCalls[0].arguments[0].title, input.title.trim())
+
+      const ticketSendToRepo = createCalls[0].arguments[0]
+      assert.strictEqual(ticketSendToRepo.id, result.id, 'ID lưu xuống repo và trả về từ repo phải là một')
+      assert.strictEqual(ticketSendToRepo.title, result.title, 'Title trả về từ repo và mock title ban đầu phải là một')
     });
 
-    it("Ném lỗi InvalidDataError và không gọi repository khi dữ liệu không hợp lệ", async () => {
+    it("Ném lỗi InvalidDataError và không gọi repository khi dữ liệu (status) không hợp lệ", async () => {
       const invalidInput: CreateTicketInput = {
-        title: "   ",
+        title: "ticket 1",
         description: "Mô tả",
-        status: "open",
+        status: "openn" as any,
         priority: "low",
         tags: [],
       };

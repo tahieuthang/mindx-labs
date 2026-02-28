@@ -57,12 +57,12 @@ export class JsonFileTicketAdapter implements TicketRepositoryPort {
     }
   }
 
-  async update(ticket: Ticket, status: TicketStatus): Promise<Ticket> {
+  async update(ticket: Ticket): Promise<Ticket> {
     const rawData = await fs.readFile(this.filePath, 'utf-8')
     const allTicket: Ticket[] = JSON.parse(rawData || '[]')
-    const searchTicket = allTicket.find(t => t.id === ticket.id)
+    let searchTicket = allTicket.find(t => t.id === ticket.id)
     if(searchTicket) {
-      searchTicket.status = status
+      searchTicket.status = ticket.status
       searchTicket.updatedAt = ticket.updatedAt
       await fs.writeFile(this.filePath, JSON.stringify(allTicket, null, 2), 'utf-8')
       return searchTicket

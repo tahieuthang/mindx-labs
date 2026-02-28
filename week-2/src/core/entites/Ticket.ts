@@ -52,11 +52,11 @@ export class Ticket {
     return new Ticket(
       data.title,
       data.description,
-      data.status,
-      data.priority,
-      new Date(data.createdAt),
+      data.status || 'open',
+      data.priority || 'low',
+      new Date(data.createdAt) ? new Date(data.createdAt) : new Date,
       data.updatedAt ? new Date(data.updatedAt) : undefined,
-      data.tags,
+      data.tags || [],
       data.id
     )
   }

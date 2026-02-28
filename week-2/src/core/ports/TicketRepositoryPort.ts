@@ -6,5 +6,5 @@ export interface TicketRepositoryPort {
   create(ticket: Ticket): Promise<Ticket>
   findById(id: string): Promise<Ticket | null>
   findAll(filters?: TicketFilters): Promise<Ticket[] | []>
-  update(ticket: Ticket, status: TicketStatus): Promise<Ticket>
+  update(ticket: Ticket): Promise<Ticket>
 }
