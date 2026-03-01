@@ -28,6 +28,8 @@ export class TicketService implements TicketServicePort {
   }
 
   async updateTicket(ticket: Ticket, status: TicketStatus): Promise<Ticket> {
+    const checkTicket = await this.ticketRepository.findById(ticket.id)
+    if(!checkTicket) throw new TicketNotFoundError(ticket.id)
     const hasChange = ticket.update(status)
     if(!hasChange) {
       throw new Error("Đây đã là status hiện tại của ticket!")

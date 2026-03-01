@@ -60,8 +60,9 @@ export class JsonFileTicketAdapter implements TicketRepositoryPort {
   async update(ticket: Ticket): Promise<Ticket> {
     let tickets = await this.readRaw()
     let index = tickets.findIndex(t => t.id === ticket.id)
-    if(index === -1) throw new TicketNotFoundError(ticket.id)
-
+    if (index === -1) {
+      throw new Error(`Storage không đồng bộ: Không tìm thấy ID ${ticket.id} để cập nhật.`)
+    }
     tickets[index] = { ...ticket }
     try {
       await fs.writeFile(this.filePath, JSON.stringify(tickets, null, 2), 'utf-8')
