@@ -3,6 +3,8 @@ import { Ticket, TicketStatus } from "../../core/entites/Ticket"
 import { TicketFilters } from "../../core/ports/TicketServicePort";
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
+import { error } from "node:console";
+import { TicketNotFoundError } from "../../core/errors/TicketNotFoundError";
 
 export class JsonFileTicketAdapter implements TicketRepositoryPort {
   private readonly filePath = path.resolve(process.cwd(), 'data', 'tickets.json');
@@ -11,19 +13,25 @@ export class JsonFileTicketAdapter implements TicketRepositoryPort {
     try {
       const rawData = await fs.readFile(this.filePath, 'utf-8');
       return JSON.parse(rawData || '[]');
-    } catch {
-      return [];
+    } catch(error: any) {
+      if(error.code === 'ENOENT') {
+        return [] 
+      }
+      throw new Error(`Read file error ${error.message}`)
     }
   }
 
   async create(ticket: Ticket): Promise<Ticket> {
-    try {
-      const tickets = await this.readRaw()
-      tickets.push({ ...ticket })
+    const tickets = await this.readRaw()
+    if (tickets.some(t => t.id === ticket.id)) {
+      throw new Error(`Ticket ID ${ticket.id} đã tồn tại!`);
+    }
+    tickets.push({ ...ticket })
+    try{
       await fs.writeFile(this.filePath, JSON.stringify(tickets, null, 2), 'utf-8')
       return ticket
-    } catch(error) {
-      throw new Error(`Persistence Error ${error instanceof Error ? error.message : 'Unknown'}`)
+    } catch(error: any) {
+      throw new Error(`Create file error ${error.message}`)
     }
   }
 
@@ -34,35 +42,32 @@ export class JsonFileTicketAdapter implements TicketRepositoryPort {
   }
 
   async findAll(filters?: TicketFilters): Promise<Ticket[] | []> {
-    try {
-      let tickets = await this.readRaw()
-      if(filters) {
-        if(filters?.status) {
-          tickets = tickets.filter(t => t.status === filters.status)
-        }
-        if(filters?.priority) {
-          tickets = tickets.filter(t => t.priority === filters.priority)
-        }
-        if(filters?.tags && filters?.tags?.length > 0) {
-          tickets = tickets.filter(t => t.tags?.some((tag: string) => filters?.tags?.includes(tag)))
-        }
+    let tickets = await this.readRaw()
+    if(filters) {
+      if(filters?.status) {
+        tickets = tickets.filter(t => t.status === filters.status)
       }
-      return tickets.map((ticket) => Ticket.formRaw(ticket))
-    } catch (error) {
-      throw new Error(`Display Error ${error instanceof Error ? error.message : 'Unknown'}`)
+      if(filters?.priority) {
+        tickets = tickets.filter(t => t.priority === filters.priority)
+      }
+      if(filters?.tags && filters?.tags?.length > 0) {
+        tickets = tickets.filter(t => t.tags?.some((tag: string) => filters?.tags?.includes(tag)))
+      }
     }
+    return tickets.map((ticket) => Ticket.formRaw(ticket))
   }
 
   async update(ticket: Ticket): Promise<Ticket> {
     let tickets = await this.readRaw()
     let index = tickets.findIndex(t => t.id === ticket.id)
-    if(index !== -1) {
-      tickets[index] = { ...ticket }
+    if(index === -1) throw new TicketNotFoundError(ticket.id)
+
+    tickets[index] = { ...ticket }
+    try {
       await fs.writeFile(this.filePath, JSON.stringify(tickets, null, 2), 'utf-8')
       return ticket
-    } else {
-      throw new Error(`Ticket với ID ${ticket.id} không tồn tại trong hệ thống.`)
+    } catch(error: any) {
+      throw new Error(`Update file error ${error.message}`)
     }
   }
-
 }

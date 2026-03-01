@@ -6,21 +6,31 @@ export type TicketTag = 'bug' | 'feature' | 'task' | 'fix';
 
 export class Ticket {
   public readonly id: string
+  public title: string
+  public description: string
+  public status: TicketStatus
+  public priority: TicketPriority
+  public createdAt: Date
+  public updatedAt?: Date | undefined
   public tags: TicketTag[]
   constructor(
-    public title: string,
-    public description: string,
-    public status: TicketStatus,
-    public priority: TicketPriority,
-    public createdAt: Date,
-    public updatedAt?: Date,
+    title: string,
+    description: string,
+    status: TicketStatus,
+    priority: TicketPriority,
+    createdAt: Date,
+    updatedAt?: Date | undefined,
     tags?: TicketTag[],
     id?: string,
   ) {
     this.id = id || Math.random().toString(36).substr(2, 9)
-    this.tags = tags || []
     this.title = title.trim()
+    this.description = description.trim()
     this.status = status
+    this.priority = priority
+    this.createdAt = createdAt
+    this.updatedAt = updatedAt || undefined
+    this.tags = tags || []
     this.validate()
   }
 
@@ -54,7 +64,7 @@ export class Ticket {
       data.description,
       data.status || 'open',
       data.priority || 'low',
-      new Date(data.createdAt) ? new Date(data.createdAt) : new Date,
+      new Date(data.createdAt),
       data.updatedAt ? new Date(data.updatedAt) : undefined,
       data.tags || [],
       data.id
