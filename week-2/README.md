@@ -80,12 +80,6 @@ Không cần cấu hình thêm. Dự án sử dụng TypeScript với cấu hìn
 npm run dev
 ```
 
-**Production mode:**
-```bash
-npm run build
-npm start
-```
-
 ### Các chức năng CLI
 
 #### 1. Tạo ticket mới (`create`)
@@ -258,4 +252,4 @@ JsonFileTicketAdapter (Secondary)
 ---
 
 **Tác giả**: Week 2 - Nền tảng & Kiến trúc Hexagonal (Ports & Adapters)  
-**Tech Stack**: TypeScript, Node.js, Jest (Node Test Runner)
+**Tech Stack**: TypeScript, Node.js
