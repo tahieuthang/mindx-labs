@@ -3,16 +3,26 @@
 Công cụ CLI quản lý ticket được xây dựng theo chuẩn **Hexagonal Architecture (Ports & Adapters)**, đảm bảo Domain logic hoàn toàn độc lập với công nghệ lưu trữ và giao diện người dùng.
 
 ## 📋 Mục lục
+- [I. Tech Stack](#tech-stack)
+- [II. Kiến trúc](#kiến-trúc)
+- [III. Cài đặt](#cài-đặt)
+- [IV. Cấu hình](#cấu-hình)
+- [V. Sử dụng](#sử-dụng)
+- [VI. Demo sản phẩm](#sản-phẩm)
+- [VII. Testing](#testing)
+- [VIII. Cấu trúc dự án](#cấu-trúc-dự-án)
 
-- [I. Kiến trúc](#kiến-trúc)
-- [II. Cài đặt](#cài-đặt)
-- [III. Cấu hình](#cấu-hình)
-- [IV. Sử dụng](#sử-dụng)
-- [V. Demo sản phẩm](#sử-dụng)
-- [VI. Testing](#testing)
-- [VII. Cấu trúc dự án](#cấu-trúc-dự-án)
+<a id="tech-stack"></a>
+## I. Tech Stack
 
-## I. Kiến trúc
+- Runtime: Node.js 20+
+- Language: TypeScript
+- Testing: Node Test
+- Architecture: Hexagonal Architecture (Ports & Adapters)
+- Persistence: JSON file-based storage
+
+<a id="kiến-trúc"></a>
+## II. Kiến trúc
 
 Dự án tuân thủ **Hexagonal Architecture** với các lớp:
 
@@ -32,14 +42,14 @@ Dự án tuân thủ **Hexagonal Architecture** với các lớp:
 
 **Secondary Adapters** (Output):
 - `JsonFileTicketAdapter`: Triển khai `TicketRepositoryPort` bằng JSON file storage
-- `InMemoryTicketAdapter`: Triển khai in-memory cho testing
 
 ### Dependency Rule
 - Domain **không phụ thuộc** vào Adapters
 - Domain chỉ phụ thuộc vào **Ports** (interfaces)
 - Adapters phụ thuộc vào Domain + Ports
 
-## II. Cài đặt
+<a id="cài-đặt"></a>
+## III. Cài đặt
 
 ### Yêu cầu
 - Node.js >= 14.x
@@ -61,8 +71,8 @@ Dự án tuân thủ **Hexagonal Architecture** với các lớp:
    ```bash
    npm run build
    ```
-
-## III. Cấu hình
+<a id="cấu-hình"></a>
+## IV. Cấu hình
 
 Dự án sử dụng JSON file để lưu trữ dữ liệu. File sẽ được tự động tạo tại:
 ```
@@ -71,7 +81,8 @@ data/tickets.json
 
 Không cần cấu hình thêm. Dự án sử dụng TypeScript với cấu hình trong `tsconfig.json`.
 
-## IV. Sử dụng
+<a id="sử-dụng"></a>
+## V. Sử dụng
 
 ### Chạy ứng dụng
 
@@ -131,8 +142,8 @@ Nhập danh sách tag (ví dụ: 1,2,4) hoặc bấm Enter để bỏ qua: 1,4
 
 ✅ Tạo ticket "Fix bug login" thành công!
 ```
-
-## V. Demo sản phẩm
+<a id="sản-phẩm"></a>
+## VI. Demo sản phẩm
 
 📺 Video demo:  
 https://www.youtube.com/watch?v=Q5dS1OPMU9M&feature=youtu.be
@@ -143,7 +154,8 @@ Nội dung video bao gồm:
 - Cập nhật trạng thái
 - Thoát chương trình
 
-## VI. Testing
+<a id="testing"></a>
+## VII. Testing
 
 ### Chạy tests
 
@@ -178,7 +190,8 @@ const repositoryMock: TicketRepositoryPort = {
 const service = new TicketService(repositoryMock);
 ```
 
-## VII. Cấu trúc dự án
+<a id="cấu-trúc-dự-án"></a>
+## VIII. Cấu trúc dự án
 
 ```
 week-2/
@@ -197,7 +210,7 @@ week-2/
 │   │   │   └── TicketCLIAdapter.ts        # CLI input adapter
 │   │   └── secondary/
 │   │       ├── JsonFileTicketAdapter.ts   # JSON storage adapter
-│   │       └── InMemoryTicketAdapter.ts   # In-memory adapter
+│   │   
 │   └── main.ts                   # Entry point
 ├── tests/
 │   └── domain/
@@ -250,6 +263,3 @@ JsonFileTicketAdapter (Secondary)
 - Hexagonal Architecture: https://alistair.cockburn.us/hexagonal-architecture/
 
 ---
-
-**Tác giả**: Week 2 - Nền tảng & Kiến trúc Hexagonal (Ports & Adapters)  
-**Tech Stack**: TypeScript, Node.js
